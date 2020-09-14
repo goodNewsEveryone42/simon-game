@@ -1,68 +1,80 @@
 <template>
   <div id="app">
-    <div class="app__container-title">
-      <p class="app__title">Simon says</p>
-    </div>
-    <div class="container">
-      <div class="container__btn">
-        <ul class="btn-game">
-          <li>
-            <button
-              type="button"
-              class="btn-game__btn btn-game__red"
-              @click="pressButton('red')"
-              :class="{'btn-game__btn-active':isActiveRed}"
-            ></button>
-          </li>
-          <li>
-            <button
-              type="button"
-              class="btn-game__btn btn-game__blue"
-              @click="pressButton('blue')"
-              :class="{'btn-game__btn-active':isActiveBlue}"
-            ></button>
-          </li>
-          <li>
-            <button
-              type="button"
-              class="btn-game__btn btn-game__yellow"
-              @click="pressButton('yellow')"
-              :class="{'btn-game__btn-active':isActiveYellow}"
-            ></button>
-          </li>
-          <li>
-            <button
-              type="button"
-              class="btn-game__btn btn-game__green"
-              @click="pressButton('green')"
-              :class="{'btn-game__btn-active':isActiveGreen}"
-            ></button>
-          </li>
-        </ul>
+    <div class="wrapper">
+      <div class="app__container-title">
+        <p class="app__title">Simon says</p>
       </div>
-      <div class="container__option">
-        <div class="option">
-          <p class="option__round">
-            Round:
-            <span class="option__round-conter">{{ counter }}</span>
-          </p>
-          <button type="button" class="option__btn" @click="startGame" :disabled="disabled">Start</button>
-          <p v-if="alertGameOver" class="option__game-over">Game over</p>
-          <p class="opion__title-list-option">Game options:</p>
-          <ul class="option__list">
-            <li class="opton__item">
-              <input type="radio" name="level" id="easy" value="1500" v-model="mode" />
-              <label for="easy">Easy</label>
+      <div class="container">
+        <div class="container__btn">
+          <ul class="btn-game">
+            <li>
+              <button
+                type="button"
+                class="btn-game__btn btn-game__red"
+                @click="pressButton('red')"
+                :class="{'btn-game__btn-active':isActive === 'red'}"
+                :disabled="disabledButton"
+              ></button>
             </li>
-            <li class="opton__item">
-              <input type="radio" name="level" id="middle" value="1000" v-model="mode" />
-              <label for="middle">Middle</label>
+            <li>
+              <button
+                type="button"
+                class="btn-game__btn btn-game__blue"
+                @click="pressButton('blue')"
+                :class="{'btn-game__btn-active':isActive === 'blue'}"
+                :disabled="disabledButton"
+              ></button>
             </li>
-            <li class="opton__item">
-              <input type="radio" name="level" id="hard" value="400" v-model="mode" />
-              <label for="hard">Hard</label>
+            <li>
+              <button
+                type="button"
+                class="btn-game__btn btn-game__yellow"
+                @click="pressButton('yellow')"
+                :class="{'btn-game__btn-active':isActive === 'yellow'}"
+                :disabled="disabledButton"
+              ></button>
+            </li>
+            <li>
+              <button
+                type="button"
+                class="btn-game__btn btn-game__green"
+                @click="pressButton('green')"
+                :class="{'btn-game__btn-active':isActive === 'green'}"
+                :disabled="disabledButton"
+              ></button>
             </li>
           </ul>
+        </div>
+        <div class="container__option">
+          <div class="option">
+            <p class="option__round">
+              Round:
+              <span class="option__round-conter">{{ counter }}</span>
+            </p>
+            <button
+              type="button"
+              class="option__btn"
+              @click="startGame"
+              :disabled="disabledStart"
+            >Start</button>
+            <p v-if="alertGameOver" class="option__game-over">Game over</p>
+            <p v-if="alertCongratulation" class="option__game-complete">You Win!</p>
+            <p class="opion__title-list-option">Game options:</p>
+            <ul class="option__list">
+              <li class="opton__item">
+                <input type="radio" name="level" id="easy" value="1500" v-model="mode" />
+                <label for="easy">Easy</label>
+              </li>
+              <li class="opton__item">
+                <input type="radio" name="level" id="middle" value="1000" v-model="mode" />
+                <label for="middle">Middle</label>
+              </li>
+              <li class="opton__item">
+                <input type="radio" name="level" id="hard" value="400" v-model="mode" />
+                <label for="hard">Hard</label>
+              </li>
+            </ul>
+          </div>
         </div>
       </div>
     </div>
@@ -71,16 +83,17 @@
 
 <script>
 export default {
+  components: {},
+
   data() {
     return {
-      disabled: false,
-      isActiveRed: false,
-      isActiveBlue: false,
-      isActiveYellow: false,
-      isActiveGreen: false,
+      disabledButton: true,
+      disabledStart: false,
+      isActive: "",
       alertGameOver: false,
+      alertCongratulation: false,
       counter: 0,
-      lengthQueue: 3,
+      lengthQueue: 20,
       allQueue: [],
       mode: 1500,
     };
@@ -88,14 +101,15 @@ export default {
 
   methods: {
     pressButton(userColor) {
-      if (!this.disabled) {
+      if (this.disabledButton) {
         return;
-      }
-      if (this.allQueue.length > 0) {
+      } else if (this.allQueue.length > 0) {
         let color = this.allQueue.shift();
+        this.flickerButton(userColor);
         if (color !== userColor) {
           this.gameOver();
         } else if (this.allQueue.length === 0) {
+          this.disabledButton = true;
           this.levelComplete();
         }
       } else {
@@ -106,13 +120,13 @@ export default {
     gameOver() {
       this.counter = 0;
       this.allQueue = [];
-      this.disabled = false;
+      this.disabledStart = false;
+      this.disabledButton = true;
       this.alertGameOver = true;
-      console.log("Игра окончена");
     },
 
     levelComplete() {
-      if (this.counter != this.lengthQueue) {
+      if (this.counter !== this.lengthQueue) {
         this.counter++;
         this.allQueue = [];
         this.randomColor();
@@ -120,22 +134,21 @@ export default {
       } else {
         this.counter = 0;
         this.allQueue = [];
-        this.disabled = false;
-        alert("You win!!");
+        this.disabledStart = false;
+        this.alertCongratulation = true;
       }
     },
 
     randomColor() {
-      let nextLevel = this.counter;
-      for (let i = 0; i < nextLevel; i++) {
+      for (let i = 0; i < this.counter; i++) {
         this.createQueue();
       }
     },
 
     startGame() {
-      console.log(this.mode);
+      this.alertCongratulation = false;
       this.alertGameOver = false;
-      this.disabled = true;
+      this.disabledStart = true;
       this.counter++;
       this.createQueue();
       this.playQueue([...this.allQueue]);
@@ -158,6 +171,8 @@ export default {
       this.flickerButton(arrayElement);
       if (array.length > 0) {
         setTimeout(this.playQueue, this.mode, array);
+      } else {
+        this.disabledButton = false;
       }
     },
 
@@ -167,37 +182,13 @@ export default {
     },
 
     highlightButton(el) {
-      switch (el) {
-        case "red":
-          this.isActiveRed = true;
-          break;
-        case "blue":
-          this.isActiveBlue = true;
-          break;
-        case "yellow":
-          this.isActiveYellow = true;
-          break;
-        case "green":
-          this.isActiveGreen = true;
-          break;
-      }
+      this.isActive = el;
+      let audio = new Audio(require(`../public/sound/${el}.mp3`));
+      audio.play();
     },
 
     colorReturn(el) {
-      switch (el) {
-        case "red":
-          this.isActiveRed = false;
-          break;
-        case "blue":
-          this.isActiveBlue = false;
-          break;
-        case "yellow":
-          this.isActiveYellow = false;
-          break;
-        case "green":
-          this.isActiveGreen = false;
-          break;
-      }
+      this.isActive = "";
     },
   },
 };
@@ -262,6 +253,12 @@ export default {
   font-size: 20px
   font-weight: 700
   color: #ff0000
+  margin-bottom: 5px
+
+.option__game-complete
+  font-size: 20px
+  font-weight: 700
+  color: #00ff7f
   margin-bottom: 5px
 
 .option__round
