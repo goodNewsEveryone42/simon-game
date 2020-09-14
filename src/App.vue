@@ -47,18 +47,19 @@
             <span class="option__round-conter">{{ counter }}</span>
           </p>
           <button type="button" class="option__btn" @click="startGame" :disabled="disabled">Start</button>
+          <p v-if="alertGameOver" class="option__game-over">Game over</p>
           <p class="opion__title-list-option">Game options:</p>
           <ul class="option__list">
             <li class="opton__item">
-              <input type="radio" name="level" id="easy" checked />
+              <input type="radio" name="level" id="easy" value="1500" v-model="mode" />
               <label for="easy">Easy</label>
             </li>
             <li class="opton__item">
-              <input type="radio" name="level" id="middle" />
+              <input type="radio" name="level" id="middle" value="1000" v-model="mode" />
               <label for="middle">Middle</label>
             </li>
             <li class="opton__item">
-              <input type="radio" name="level" id="hard" />
+              <input type="radio" name="level" id="hard" value="400" v-model="mode" />
               <label for="hard">Hard</label>
             </li>
           </ul>
@@ -77,21 +78,21 @@ export default {
       isActiveBlue: false,
       isActiveYellow: false,
       isActiveGreen: false,
+      alertGameOver: false,
       counter: 0,
-      lengthOrder: 15,
-      highlighItem: "",
+      lengthQueue: 3,
       allQueue: [],
-      easyMode: 1500,
-      middleMode: 1000,
-      hardMode: 400,
+      mode: 1500,
     };
   },
 
   methods: {
     pressButton(userColor) {
-      if (this.allQueue.length > 0 && !this.disabled) {
+      if (!this.disabled) {
+        return;
+      }
+      if (this.allQueue.length > 0) {
         let color = this.allQueue.shift();
-        console.log(color);
         if (color !== userColor) {
           this.gameOver();
         } else if (this.allQueue.length === 0) {
@@ -102,27 +103,26 @@ export default {
       }
     },
 
-    // this.allQueue.filter((el) => el != userColor);
-    // if (this.allQueue === 0) {
-    //   this.levelComplete();
-    // }
-    // }
-
-    // else {
-    //   this.levelComplete();
-    // }
-
     gameOver() {
       this.counter = 0;
       this.allQueue = [];
+      this.disabled = false;
+      this.alertGameOver = true;
       console.log("Игра окончена");
     },
 
     levelComplete() {
-      this.counter++;
-      this.allQueue = [];
-      this.randomColor();
-      this.playQueue([...this.allQueue]);
+      if (this.counter != this.lengthQueue) {
+        this.counter++;
+        this.allQueue = [];
+        this.randomColor();
+        this.playQueue([...this.allQueue]);
+      } else {
+        this.counter = 0;
+        this.allQueue = [];
+        this.disabled = false;
+        alert("You win!!");
+      }
     },
 
     randomColor() {
@@ -133,8 +133,10 @@ export default {
     },
 
     startGame() {
+      console.log(this.mode);
+      this.alertGameOver = false;
       this.disabled = true;
-      this.counter = 1;
+      this.counter++;
       this.createQueue();
       this.playQueue([...this.allQueue]);
     },
@@ -155,7 +157,7 @@ export default {
       let arrayElement = array.shift();
       this.flickerButton(arrayElement);
       if (array.length > 0) {
-        setTimeout(this.playQueue, this.easyMode, array);
+        setTimeout(this.playQueue, this.mode, array);
       }
     },
 
@@ -234,9 +236,6 @@ export default {
   opacity: 0.5
   outline: none
 
-.btn-game__btn:hover
-  border: 5px solid #000000
-
 .btn-game__btn:active
   opacity: 1
 
@@ -259,6 +258,12 @@ export default {
   background: #00ff00
   clip: rect(150px,300px, 300px, 150px)
 
+.option__game-over
+  font-size: 20px
+  font-weight: 700
+  color: #ff0000
+  margin-bottom: 5px
+
 .option__round
   font-size: 27px
   font-weight: 700
@@ -270,7 +275,7 @@ export default {
   font-weight: 700
   width: 120px
   height: 35px
-  margin-bottom: 20px
+  margin-bottom: 5px
   border-radius: 10px
   background-color: #00ffff
 
