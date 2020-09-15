@@ -1,5 +1,5 @@
 # game simon says
-github pages https://goodnewseveryone42.github.io/simon-game/
+Github page https://goodnewseveryone42.github.io/simon-game/
 
 ## Project setup
 ```
